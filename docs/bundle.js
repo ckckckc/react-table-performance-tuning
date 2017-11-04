@@ -100,6 +100,10 @@ var _Selectable = __webpack_require__("./examples/Selectable.jsx");
 
 var _Selectable2 = _interopRequireDefault(_Selectable);
 
+var _datasource = __webpack_require__("./examples/datasource.js");
+
+var _datasource2 = _interopRequireDefault(_datasource);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -118,9 +122,6 @@ var App = (_temp = _class = function (_Component) {
 
         _this.startTime = 0;
         _this.endTime = 0;
-        _this.state = {
-            elapsedTime: 0
-        };
 
         _this.onUpdateStart = function () {
             _this.startTime = window.performance.now();
@@ -132,21 +133,18 @@ var App = (_temp = _class = function (_Component) {
             _this.setState({ elapsedTime: _this.endTime - _this.startTime });
         };
 
-        _this.toggleAll = _this.toggleAll.bind(_this);
+        _this.state = {
+            elapsedTime: 0
+        };
         return _this;
     }
 
     _createClass(App, [{
-        key: 'toggleAll',
-        value: function toggleAll() {
-            this.props.toggleAll();
-        }
-    }, {
         key: 'render',
         value: function render() {
             var _props = this.props,
-                data = _props.data,
-                isAllChecked = _props.isAllChecked;
+                toggleAllCheckbox = _props.toggleAllCheckbox,
+                idList = _props.idList;
 
             return _react2.default.createElement(
                 'div',
@@ -169,7 +167,9 @@ var App = (_temp = _class = function (_Component) {
                         _reactButtons.Button,
                         {
                             btnStyle: 'flat',
-                            onClick: this.toggleAll
+                            onClick: function onClick() {
+                                toggleAllCheckbox(idList.length > 0);
+                            }
                         },
                         'Toggle All'
                     )
@@ -181,10 +181,9 @@ var App = (_temp = _class = function (_Component) {
                         'p',
                         null,
                         'Records: ',
-                        data.length
+                        _datasource2.default.length
                     ),
                     _react2.default.createElement(_Selectable2.default, {
-                        isAllChecked: isAllChecked,
                         onUpdateStart: this.onUpdateStart,
                         onUpdateEnd: this.onUpdateEnd
                     })
@@ -196,15 +195,15 @@ var App = (_temp = _class = function (_Component) {
     return App;
 }(_react.Component), _class.propTypes = {
     data: _propTypes2.default.array,
-    isAllChecked: _propTypes2.default.bool,
-    toggleAll: _propTypes2.default.func
+    idList: _propTypes2.default.array,
+    toggleAllCheckbox: _propTypes2.default.func
 }, _temp);
 exports.default = (0, _reactRedux.connect)(function (store) {
     return store;
 }, function (dispatch) {
     return {
-        toggleAll: function toggleAll() {
-            return dispatch((0, _action.toggleAllCheckbox)());
+        toggleAllCheckbox: function toggleAllCheckbox(isAllChecked) {
+            return dispatch((0, _action.toggleAllCheckbox)(isAllChecked));
         }
     };
 })(App);
@@ -223,6 +222,10 @@ Object.defineProperty(exports, "__esModule", {
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _class, _temp;
+
 var _propTypes = __webpack_require__("./node_modules/prop-types/index.js");
 
 var _propTypes2 = _interopRequireDefault(_propTypes);
@@ -231,25 +234,80 @@ var _react = __webpack_require__("./node_modules/react/index.js");
 
 var _react2 = _interopRequireDefault(_react);
 
+var _chainedFunction = __webpack_require__("./node_modules/chained-function/lib/index.js");
+
+var _chainedFunction2 = _interopRequireDefault(_chainedFunction);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var Checkbox = function Checkbox(props) {
-    var onChange = props.onChange,
-        checked = props.checked;
+function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
 
-    console.log('checked in checkbox props', checked);
-    return _react2.default.createElement('input', _extends({}, props, {
-        type: 'checkbox',
-        checked: checked,
-        onChange: onChange
-    }));
-};
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-Checkbox.propTypes = {
-    checked: _propTypes2.default.bool,
-    onChange: _propTypes2.default.func
-};
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var Checkbox = (_temp = _class = function (_PureComponent) {
+    _inherits(Checkbox, _PureComponent);
+
+    function Checkbox() {
+        _classCallCheck(this, Checkbox);
+
+        return _possibleConstructorReturn(this, (Checkbox.__proto__ || Object.getPrototypeOf(Checkbox)).apply(this, arguments));
+    }
+
+    _createClass(Checkbox, [{
+        key: 'componentDidMount',
+        value: function componentDidMount() {
+            this.el.indeterminate = this.props.indeterminate;
+        }
+    }, {
+        key: 'componentDidUpdate',
+        value: function componentDidUpdate(prevProps) {
+            if (prevProps.indeterminate !== this.props.indeterminate) {
+                this.el.indeterminate = this.props.indeterminate;
+            }
+        }
+    }, {
+        key: 'render',
+        value: function render() {
+            var _this2 = this;
+
+            var _props = this.props,
+                onChange = _props.onChange,
+                props = _objectWithoutProperties(_props, ['onChange']);
+
+            delete props.indeterminate;
+
+            return _react2.default.createElement('input', _extends({}, props, {
+                type: 'checkbox',
+                ref: function ref(el) {
+                    _this2.el = el;
+                },
+                onChange: (0, _chainedFunction2.default)(function () {
+                    _this2.el.indeterminate = _this2.props.indeterminate;
+                }, onChange)
+            }));
+        }
+    }, {
+        key: 'checked',
+        get: function get() {
+            return this.el.checked;
+        }
+    }, {
+        key: 'indeterminate',
+        get: function get() {
+            return this.el.indeterminate;
+        }
+    }]);
+
+    return Checkbox;
+}(_react.PureComponent), _class.propTypes = {
+    indeterminate: _propTypes2.default.bool
+}, _class.defaultProps = {
+    indeterminate: false
+}, _temp);
 exports.default = Checkbox;
 
 /***/ }),
@@ -292,6 +350,10 @@ var _index = __webpack_require__("./examples/index.styl");
 
 var _index2 = _interopRequireDefault(_index);
 
+var _datasource = __webpack_require__("./examples/datasource.js");
+
+var _datasource2 = _interopRequireDefault(_datasource);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -317,70 +379,57 @@ var Selectable = (_temp = _class = function (_Component) {
             }
         };
 
-        _this.onRowClick = function (record, index, e) {
-            // const checked = record.checked;
-            // this.setState(state => ({
-            //     data: state.data.map(item => {
-            //         if (record.id === item.id) {
-            //             return {
-            //                 ...item,
-            //                 checked: !checked
-            //             };
-            //         }
-            //         return item;
-            //     })
-            // }));
-            _this.setState(function (state) {
-                return {
-                    data: null
-                };
-            });
+        _this.onRowClick = function (record, rowIndex, event) {
+            _this.props.toggleIdList(record.id);
         };
 
-        _this.toggleAll = _this.toggleAll.bind(_this);
+        _this.renderTitleCheckbox = _this.renderTitleCheckbox.bind(_this);
+        _this.renderRowCheckbox = _this.renderRowCheckbox.bind(_this);
         return _this;
     }
 
     _createClass(Selectable, [{
-        key: 'toggleAll',
-        value: function toggleAll() {
-            this.props.toggleAll();
+        key: 'renderTitleCheckbox',
+        value: function renderTitleCheckbox() {
+            var _props = this.props,
+                idList = _props.idList,
+                toggleAllCheckbox = _props.toggleAllCheckbox;
+
+            var selectedLength = idList.length;
+            var indeterminate = selectedLength > 0 && selectedLength < _datasource2.default.length;
+            return _react2.default.createElement(_Checkbox2.default, {
+                indeterminate: indeterminate,
+                checked: idList.length === _datasource2.default.length,
+                onClick: function onClick() {
+                    toggleAllCheckbox(idList.length > 0);
+                }
+            });
         }
+    }, {
+        key: 'renderRowCheckbox',
+        value: function renderRowCheckbox(value, row) {
+            var _this2 = this;
 
-        // renderHeaderCheckbox = () => {
-        //     const { isAllChecked, toggleAll } = this.props;
-        //     console.log('header checkbox', isAllChecked)
-        //     return (
-        //         <Checkbox
-        //             checked={isAllChecked}
-        //             onChange={() => {
-        //                 console.log(1234)
-        //                 toggleAll();
-        //             }}
-        //         />
-        //     );
-        // };
+            var idList = this.props.idList;
+            var id = row.id;
 
+            return _react2.default.createElement(_Checkbox2.default, {
+                id: id,
+                className: 'input-checkbox',
+                onClick: function onClick(event) {
+                    event.stopPropagation();
+                    _this2.props.toggleIdList(id);
+                },
+                checked: idList.indexOf(id) !== -1
+            });
+        }
     }, {
         key: 'getColumns',
         value: function getColumns() {
-            var isAllChecked = this.props.isAllChecked;
-
-            console.log('isAllChecked', isAllChecked);
             var columns = [{
-                title: _react2.default.createElement('input', {
-                    type: 'checkbox',
-                    checked: isAllChecked,
-                    onChange: this.toggleAll
-                }),
+                title: this.renderTitleCheckbox,
                 dataKey: 'checked',
-                render: function render(value, row) {
-                    return _react2.default.createElement(_Checkbox2.default, {
-                        id: row.id,
-                        className: 'input-checkbox',
-                        checked: row.checked
-                    });
-                },
+                render: this.renderRowCheckbox,
                 width: 38
             }, {
                 title: '#',
@@ -415,7 +464,7 @@ var Selectable = (_temp = _class = function (_Component) {
                 justified: false,
                 rowKey: 'id',
                 columns: columns,
-                data: this.props.data,
+                data: _datasource2.default,
                 rowClassName: this.getRowClassName,
                 onRowClick: this.onRowClick,
                 maxHeight: 400
@@ -425,21 +474,21 @@ var Selectable = (_temp = _class = function (_Component) {
 
     return Selectable;
 }(_react.Component), _class.propTypes = {
-    data: _propTypes2.default.array,
-    isAllChecked: _propTypes2.default.bool,
+    idList: _propTypes2.default.array,
     onUpdateStart: _propTypes2.default.func,
     onUpdateEnd: _propTypes2.default.func,
-    toggleAll: _propTypes2.default.func
+    toggleAllCheckbox: _propTypes2.default.func,
+    toggleIdList: _propTypes2.default.func
 }, _temp);
 exports.default = (0, _reactRedux.connect)(function (store) {
-    console.log('table', store);
-    var data = store.data;
-
-    return { data: data };
+    return store;
 }, function (dispatch) {
     return {
-        toggleAll: function toggleAll() {
-            return dispatch((0, _action.toggleAllCheckbox)());
+        toggleAllCheckbox: function toggleAllCheckbox(isAllChecked) {
+            return dispatch((0, _action.toggleAllCheckbox)(isAllChecked));
+        },
+        toggleIdList: function toggleIdList(id) {
+            return dispatch((0, _action.toggleIdList)(id));
         }
     };
 })(Selectable);
@@ -455,13 +504,21 @@ exports.default = (0, _reactRedux.connect)(function (store) {
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.toggleAllCheckbox = undefined;
+exports.toggleIdList = exports.toggleAllCheckbox = undefined;
 
 var _actionType = __webpack_require__("./examples/actionType.js");
 
-var toggleAllCheckbox = exports.toggleAllCheckbox = function toggleAllCheckbox() {
+var toggleAllCheckbox = exports.toggleAllCheckbox = function toggleAllCheckbox(isAllChecked) {
     return {
-        type: _actionType.TOGGLE_ALL_CHECKBOX
+        type: _actionType.TOGGLE_ALL_CHECKBOX,
+        isAllChecked: isAllChecked
+    };
+};
+
+var toggleIdList = exports.toggleIdList = function toggleIdList(id) {
+    return {
+        type: _actionType.TOGGLE_ID_LIST,
+        id: id
     };
 };
 
@@ -477,6 +534,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 var TOGGLE_ALL_CHECKBOX = exports.TOGGLE_ALL_CHECKBOX = 'TOGGLE_ALL_CHECKBOX';
+var TOGGLE_ID_LIST = exports.TOGGLE_ID_LIST = 'TOGGLE_ID_LIST';
 
 /***/ }),
 
@@ -487,8 +545,8 @@ var TOGGLE_ALL_CHECKBOX = exports.TOGGLE_ALL_CHECKBOX = 'TOGGLE_ALL_CHECKBOX';
 
 
 var data = [];
-var dataCount = 5 || 5000;
-for (var i = 1; i <= dataCount; ++i) {
+
+for (var i = 1; i <= 5000; ++i) {
     data.push({
         id: i,
         checked: false,
@@ -596,9 +654,14 @@ var _datasource2 = _interopRequireDefault(_datasource);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
+var allIds = _datasource2.default.map(function (data) {
+    return data.id;
+});
+
 var defaultState = {
-    isAllChecked: false,
-    data: _datasource2.default
+    idList: []
 };
 
 exports.default = function () {
@@ -608,7 +671,20 @@ exports.default = function () {
     switch (action.type) {
         case _actionType.TOGGLE_ALL_CHECKBOX:
             {
-                return _extends({}, state, { isAllChecked: !state.isAllChecked });
+                var isAllChecked = action.isAllChecked;
+
+                return _extends({}, state, {
+                    idList: isAllChecked ? [] : [].concat(_toConsumableArray(allIds))
+                });
+            }
+        case _actionType.TOGGLE_ID_LIST:
+            {
+                var id = action.id;
+                var idList = state.idList;
+
+                var indexOfId = idList.indexOf(id);
+                indexOfId === -1 ? idList.push(id) : idList.splice(indexOfId, 1);
+                return _extends({}, state, { idList: [].concat(_toConsumableArray(idList)) });
             }
         default:
             {
@@ -1319,6 +1395,57 @@ function getOption(options, name, defaultValue) {
     return value;
 }
 
+
+/***/ }),
+
+/***/ "./node_modules/chained-function/lib/chained-function.js":
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+exports.default = function () {
+    for (var _len = arguments.length, funcs = Array(_len), _key = 0; _key < _len; _key++) {
+        funcs[_key] = arguments[_key];
+    }
+
+    return funcs.filter(function (func) {
+        return typeof func === 'function';
+    }).reduce(function (accumulator, func) {
+        if (accumulator === null) {
+            return func;
+        }
+
+        return function chainedFunction() {
+            for (var _len2 = arguments.length, args = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+                args[_key2] = arguments[_key2];
+            }
+
+            accumulator.apply(this, args);
+            func.apply(this, args);
+        };
+    }, null);
+};
+
+/***/ }),
+
+/***/ "./node_modules/chained-function/lib/index.js":
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _chainedFunction = __webpack_require__("./node_modules/chained-function/lib/chained-function.js");
+
+var _chainedFunction2 = _interopRequireDefault(_chainedFunction);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+module.exports = _chainedFunction2.default;
 
 /***/ }),
 
@@ -30131,4 +30258,4 @@ exports.default = uniqueid;
 /***/ })
 
 /******/ });
-//# sourceMappingURL=bundle.js.map?7e075c91ba21fafee653
+//# sourceMappingURL=bundle.js.map?1ec1b787afb0808073ef
