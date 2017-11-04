@@ -43,6 +43,8 @@
     "lodash.debounce": "^4.0.8",
     "lodash.get": "^4.4.2",
     "prop-types": "^15.5.8",
+    "react-redux": "^5.0.6",
+    "redux": "^3.7.2",
     "trendmicro-ui": "^0.4.0"
   },
   "devDependencies": {

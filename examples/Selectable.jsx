@@ -1,65 +1,28 @@
 import PropTypes from 'prop-types';
-import React, { PureComponent } from 'react';
-import ReactDOM from 'react-dom';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
+import { toggleAllCheckbox, toggleIdList } from './action';
 import Table from '../src';
 import Checkbox from './Checkbox';
 import styles from './index.styl';
+import data from './datasource';
 
-class Selectable extends PureComponent {
+class Selectable extends Component {
+    constructor(props) {
+        super(props);
+
+        this.renderTitleCheckbox = this.renderTitleCheckbox.bind(this);
+        this.renderRowCheckbox = this.renderRowCheckbox.bind(this);
+    }
+
     static propTypes = {
-        data: PropTypes.array,
+        idList: PropTypes.array,
         onUpdateStart: PropTypes.func,
-        onUpdateEnd: PropTypes.func
+        onUpdateEnd: PropTypes.func,
+        toggleAllCheckbox: PropTypes.func,
+        toggleIdList: PropTypes.func
     };
 
-    state = {
-        data: this.props.data
-    };
-    node = {
-        checkbox: null
-    };
-
-    toggleAll = () => {
-        if (!this.node.checkbox) {
-            return;
-        }
-
-        const node = ReactDOM.findDOMNode(this.node.checkbox);
-        const checked = node.checked;
-        this.setState(state => ({
-            data: state.data.map(item => ({
-                ...item,
-                checked: !checked
-            }))
-        }));
-    };
-    renderHeaderCheckbox = () => {
-        const dataLength = this.state.data.length;
-        const selectedLength = this.state.data.filter(data => !!data.checked).length;
-        const checked = selectedLength > 0;
-        const indeterminate = selectedLength > 0 && selectedLength < dataLength;
-
-        return (
-            <Checkbox
-                ref={node => {
-                    this.node.checkbox = node;
-                }}
-                checked={checked}
-                indeterminate={indeterminate}
-                onChange={event => {
-                    const checkbox = event.target;
-                    const checked = !!checkbox.checked;
-
-                    this.setState(state => ({
-                        data: state.data.map(item => ({
-                            ...item,
-                            checked: checked
-                        }))
-                    }));
-                }}
-            />
-        );
-    };
     getRowClassName = (record, key) => {
         const checked = record.checked;
         if (checked) {
@@ -68,51 +31,65 @@ class Selectable extends PureComponent {
             return null;
         }
     };
-    onRowClick = (record, index, e) => {
-        const checked = record.checked;
-        this.setState(state => ({
-            data: state.data.map(item => {
-                if (record.id === item.id) {
-                    return {
-                        ...item,
-                        checked: !checked
-                    };
-                }
-                return item;
-            })
-        }));
+
+    onRowClick = (record, rowIndex, event) => {
+        this.props.toggleIdList(record.id);
     };
 
-    columns = [
-        {
-            title: this.renderHeaderCheckbox,
-            dataKey: 'checked',
-            render: (value, row) => (
-                <Checkbox
-                    id={row.id}
-                    className="input-checkbox"
-                    checked={row.checked}
-                />
-            ),
-            width: 38
-        },
-        {
-            title: '#',
-            dataKey: 'id'
-        },
-        {
-            title: 'Event Type',
-            dataKey: 'eventType'
-        },
-        {
-            title: 'Affected Devices',
-            dataIndex: 'affectedDevices'
-        },
-        {
-            title: 'Detections',
-            dataIndex: 'detections'
-        }
-    ];
+    renderTitleCheckbox() {
+        const { idList, toggleAllCheckbox } = this.props;
+        const selectedLength = idList.length;
+        const indeterminate = selectedLength > 0 && selectedLength < data.length;
+        return (<Checkbox
+            indeterminate={indeterminate}
+            checked={idList.length === data.length}
+            onClick={() => {
+                toggleAllCheckbox(idList.length > 0);
+            }}
+        />);
+    }
+
+    renderRowCheckbox(value, row) {
+        const { idList } = this.props;
+        const { id } = row;
+        return (<Checkbox
+            id={id}
+            className="input-checkbox"
+            onClick={(event) => {
+                event.stopPropagation();
+                this.props.toggleIdList(id);
+            }}
+            checked={idList.indexOf(id) !== -1}
+        />);
+    }
+
+    getColumns() {
+        const columns = [
+            {
+                title: this.renderTitleCheckbox,
+                dataKey: 'checked',
+                render: this.renderRowCheckbox,
+                width: 38
+            },
+            {
+                title: '#',
+                dataKey: 'id'
+            },
+            {
+                title: 'Event Type',
+                dataKey: 'eventType'
+            },
+            {
+                title: 'Affected Devices',
+                dataIndex: 'affectedDevices'
+            },
+            {
+                title: 'Detections',
+                dataIndex: 'detections'
+            }
+        ];
+        return columns;
+    }
 
     componentWillUpdate() {
         this.props.onUpdateStart();
@@ -121,12 +98,13 @@ class Selectable extends PureComponent {
         this.props.onUpdateEnd();
     }
     render() {
+        const columns = this.getColumns();
         return (
             <Table
                 justified={false}
                 rowKey="id"
-                columns={this.columns}
-                data={this.state.data}
+                columns={columns}
+                data={data}
                 rowClassName={this.getRowClassName}
                 onRowClick={this.onRowClick}
                 maxHeight={400}
@@ -136,4 +114,14 @@ class Selectable extends PureComponent {
 
 }
 
-export default Selectable;
+export default connect(store => store,
+dispatch => {
+    return {
+        toggleAllCheckbox: (isAllChecked) => {
+            return dispatch(toggleAllCheckbox(isAllChecked));
+        },
+        toggleIdList: id => {
+            return dispatch(toggleIdList(id));
+        }
+    };
+})(Selectable);
