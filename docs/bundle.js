@@ -370,25 +370,31 @@ var Selectable = (_temp = _class = function (_Component) {
 
         var _this = _possibleConstructorReturn(this, (Selectable.__proto__ || Object.getPrototypeOf(Selectable)).call(this, props));
 
-        _this.getRowClassName = function (record, key) {
-            var checked = record.checked;
-            if (checked) {
-                return _index2.default.active;
-            } else {
-                return null;
-            }
-        };
-
-        _this.onRowClick = function (record, rowIndex, event) {
-            _this.props.toggleIdList(record.id);
-        };
-
+        _this.getRowClassName = _this.getRowClassName.bind(_this);
         _this.renderTitleCheckbox = _this.renderTitleCheckbox.bind(_this);
         _this.renderRowCheckbox = _this.renderRowCheckbox.bind(_this);
+        _this.onRowClick = _this.onRowClick.bind(_this);
         return _this;
     }
 
     _createClass(Selectable, [{
+        key: 'getRowClassName',
+        value: function getRowClassName(record, key) {
+            var idList = this.props.idList;
+            var id = record.id;
+
+            if (idList.indexOf(id) !== -1) {
+                return _index2.default.active;
+            } else {
+                return null;
+            }
+        }
+    }, {
+        key: 'onRowClick',
+        value: function onRowClick(record, rowIndex, event) {
+            this.props.toggleIdList(record.id);
+        }
+    }, {
         key: 'renderTitleCheckbox',
         value: function renderTitleCheckbox() {
             var _props = this.props,
@@ -30258,4 +30264,4 @@ exports.default = uniqueid;
 /***/ })
 
 /******/ });
-//# sourceMappingURL=bundle.js.map?1ec1b787afb0808073ef
+//# sourceMappingURL=bundle.js.map?2dda9a5fd6ac38186077

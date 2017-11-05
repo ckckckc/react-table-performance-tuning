@@ -11,8 +11,10 @@ class Selectable extends Component {
     constructor(props) {
         super(props);
 
+        this.getRowClassName = this.getRowClassName.bind(this);
         this.renderTitleCheckbox = this.renderTitleCheckbox.bind(this);
         this.renderRowCheckbox = this.renderRowCheckbox.bind(this);
+        this.onRowClick = this.onRowClick.bind(this);
     }
 
     static propTypes = {
@@ -23,18 +25,19 @@ class Selectable extends Component {
         toggleIdList: PropTypes.func
     };
 
-    getRowClassName = (record, key) => {
-        const checked = record.checked;
-        if (checked) {
+    getRowClassName(record, key) {
+        const { idList } = this.props;
+        const { id } = record;
+        if (idList.indexOf(id) !== -1) {
             return styles.active;
         } else {
             return null;
         }
-    };
+    }
 
-    onRowClick = (record, rowIndex, event) => {
+    onRowClick(record, rowIndex, event) {
         this.props.toggleIdList(record.id);
-    };
+    }
 
     renderTitleCheckbox() {
         const { idList, toggleAllCheckbox } = this.props;
